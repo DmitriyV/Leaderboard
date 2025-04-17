@@ -42,7 +42,7 @@ namespace Leaderboard.Services;
 
 public class LeaderboardCalculator : ILeaderboardCalculator
 {
-    private const int NumberOfPlaces = 3; //only 1st, 2nd, and 3rd places are eligible for an award
+    private const int NumberOfAwards = 3; //only 1st, 2nd, and 3rd places are eligible for an award
     private const int FirstPlace = 1;
     private const int SecondPlace = 2;
     private const int ThirdPlace = 3;
@@ -58,7 +58,7 @@ public class LeaderboardCalculator : ILeaderboardCalculator
 
         var losers = GetNoAwardUsers(sortedByScoreUsers, topScoreUsers);
 
-        return [.. winners, .. losers];
+        return [..winners, ..losers];
 
         static IUserWithScore[] SortUsersByScore(IReadOnlyList<IUserWithScore> usersWithScores) => [.. usersWithScores.OrderByDescending(user => user.Score)];
     }
@@ -66,41 +66,41 @@ public class LeaderboardCalculator : ILeaderboardCalculator
     private static List<IUserWithScore> GetUsersEligibleForAward(LeaderboardMinScores leaderboardMinScores, IUserWithScore[] sortedByScoreUsers) =>
         [.. sortedByScoreUsers
             .Where(user => user.Score >= leaderboardMinScores.ThirdPlaceMinScore) // users with score lower than 3rd place are not eligible
-            .Take(NumberOfPlaces)];
+            .Take(NumberOfAwards)];
 
     private static List<UserWithPlace> GetAwardUsers(
-        List<IUserWithScore> topUsers,
-        LeaderboardMinScores leaderboardMinScores)
+        List<IUserWithScore> topScoreUsers,
+        LeaderboardMinScores scores)
     {
         var placeAssignments = new[]
         {
-            (leaderboardMinScores.FirstPlaceMinScore, FirstPlace),
-            (leaderboardMinScores.SecondPlaceMinScore, SecondPlace),
-            (leaderboardMinScores.ThirdPlaceMinScore, ThirdPlace)
+            (scores.FirstPlaceMinScore, FirstPlace),
+            (scores.SecondPlaceMinScore, SecondPlace),
+            (scores.ThirdPlaceMinScore, ThirdPlace)
         };
 
-        List<UserWithPlace> awardPlaces = [];
-        foreach (var user in topUsers)
+        List<UserWithPlace> awardUsers = [];
+        foreach (var user in topScoreUsers)
         {
-            foreach (var (minScore, place) in placeAssignments)
+            foreach (var (score, place) in placeAssignments)
             {
-                if (NotEnoughScore(user, minScore) || PlaceIsTaken(awardPlaces, place))
+                if (NotEnoughScore(user, score) || PlaceIsTaken(awardUsers, place))
                     continue;
 
-                awardPlaces.Add(new UserWithPlace(user.UserId, place));
+                awardUsers.Add(new UserWithPlace(user.UserId, place));
                 break;
             }
         }
 
-        return awardPlaces;
+        return awardUsers;
 
-        static bool NotEnoughScore(IUserWithScore user, int minScore) => user.Score < minScore;
+        static bool NotEnoughScore(IUserWithScore user, int score) => user.Score < score;
 
-        static bool PlaceIsTaken(List<UserWithPlace> result, int place) => result.Any(r => r.Place == place);
+        static bool PlaceIsTaken(List<UserWithPlace> users, int place) => users.Any(user => user.Place == place);
     }
 
     private static IEnumerable<UserWithPlace> GetNoAwardUsers(IUserWithScore[] sortedByScoreUsers, List<IUserWithScore> topUsers) =>
         sortedByScoreUsers
             .Skip(topUsers.Count)
-            .Select((user, index) => new UserWithPlace(user.UserId, index + NumberOfPlaces + 1));
+            .Select((user, index) => new UserWithPlace(user.UserId, index + NumberOfAwards + 1));
 }
