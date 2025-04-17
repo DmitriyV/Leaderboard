@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest # Switch to Linux environment
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
@@ -19,7 +19,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 7.0.x # Adjust this to match your .NET version
+        dotnet-version: 9.0.x
 
     - name: Restore dependencies
       run: dotnet restore
