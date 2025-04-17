@@ -50,10 +50,7 @@ public class LeaderboardCalculator : ILeaderboardCalculator
     public IReadOnlyList<UserWithPlace> CalculatePlaces(IReadOnlyList<IUserWithScore> usersWithScores,
         LeaderboardMinScores leaderboardMinScores)
     {
-        // Sort users by score in descending order
-        var sortedByScoreUsers = usersWithScores
-            .OrderByDescending(user => user.Score)
-            .ToArray();
+        var sortedByScoreUsers = SortUsersByScore(usersWithScores);
 
         var topScoreUsers = GetUsersEligibleForAward(leaderboardMinScores, sortedByScoreUsers);
 
@@ -62,6 +59,8 @@ public class LeaderboardCalculator : ILeaderboardCalculator
         var losers = GetNoAwardUsers(sortedByScoreUsers, topScoreUsers);
 
         return [.. winners, .. losers];
+
+        static IUserWithScore[] SortUsersByScore(IReadOnlyList<IUserWithScore> usersWithScores) => [.. usersWithScores.OrderByDescending(user => user.Score)];
     }
 
     private static List<IUserWithScore> GetUsersEligibleForAward(LeaderboardMinScores leaderboardMinScores, IUserWithScore[] sortedByScoreUsers) =>
