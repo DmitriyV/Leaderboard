@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Linq;
 using Leaderboard.Models;
 
 // ReSharper disable once InvalidXmlDocComment
@@ -51,43 +52,34 @@ public class LeaderboardCalculator : ILeaderboardCalculator
 
         var result = new List<UserWithPlace>(sortedByScoreUsers.Length);
 
-        var topThreeUsers = sortedByScoreUsers.Take(3).ToList();
+        var usersToAward = sortedByScoreUsers
+            .Where(x => x.Score >= leaderboardMinScores.ThirdPlaceMinScore)
+            .Take(3)
+            .ToList();
 
         var firstPlaceTaken = false;
         var secondPlaceTaken = false;
-        var thirdPlaceTaken = false;
 
-        var finalPlace = 0;
-
-        for (int i = 0; i < topThreeUsers.Count; i++)
+        for (int i = 0; i < usersToAward.Count; i++)
         {
-            var user = topThreeUsers[i];
+            var user = usersToAward[i];
             if (!firstPlaceTaken && user.Score >= leaderboardMinScores.FirstPlaceMinScore)
             {
                 firstPlaceTaken = true;
-                finalPlace = 1;
                 result.Add(new UserWithPlace(user.UserId, 1));
             }
             else if (!secondPlaceTaken && user.Score >= leaderboardMinScores.SecondPlaceMinScore)
             {
                 secondPlaceTaken = true;
-                finalPlace = 2;
                 result.Add(new UserWithPlace(user.UserId, 2));
             }
-            else if (!thirdPlaceTaken && user.Score >= leaderboardMinScores.ThirdPlaceMinScore)
+            else
             {
-                thirdPlaceTaken = true;
-                finalPlace = 3;
                 result.Add(new UserWithPlace(user.UserId, 3));
-            }
-            else 
-            {
-                finalPlace = i + 3;
-                result.Add(new UserWithPlace(user.UserId, i + 3));
             }
         }
 
-        result.AddRange(sortedByScoreUsers.Skip(3).Select((x, i) => new UserWithPlace(x.UserId, i + finalPlace + 1)));
+        result.AddRange(sortedByScoreUsers.Skip(usersToAward.Count).Select((x, i) => new UserWithPlace(x.UserId, i + 4)));
         return result;
     }
 
