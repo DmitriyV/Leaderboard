@@ -1,6 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Linq;
-using Leaderboard.Models;
+﻿using Leaderboard.Models;
 
 // ReSharper disable once InvalidXmlDocComment
 /**
@@ -44,7 +42,8 @@ namespace Leaderboard.Services;
 
 public class LeaderboardCalculator : ILeaderboardCalculator
 {
-    public IReadOnlyList<UserWithPlace> CalculatePlaces(IReadOnlyList<IUserWithScore> usersWithScores, LeaderboardMinScores leaderboardMinScores)
+    public IReadOnlyList<UserWithPlace> CalculatePlaces(IReadOnlyList<IUserWithScore> usersWithScores,
+        LeaderboardMinScores leaderboardMinScores)
     {
         var sortedByScoreUsers = usersWithScores
             .OrderByDescending(user => user.Score)
@@ -60,9 +59,8 @@ public class LeaderboardCalculator : ILeaderboardCalculator
         var firstPlaceTaken = false;
         var secondPlaceTaken = false;
 
-        for (int i = 0; i < usersToAward.Count; i++)
+        foreach (var user in usersToAward)
         {
-            var user = usersToAward[i];
             if (!firstPlaceTaken && user.Score >= leaderboardMinScores.FirstPlaceMinScore)
             {
                 firstPlaceTaken = true;
@@ -79,8 +77,8 @@ public class LeaderboardCalculator : ILeaderboardCalculator
             }
         }
 
-        result.AddRange(sortedByScoreUsers.Skip(usersToAward.Count).Select((x, i) => new UserWithPlace(x.UserId, i + 4)));
+        result.AddRange(
+            sortedByScoreUsers.Skip(usersToAward.Count).Select((x, i) => new UserWithPlace(x.UserId, i + 4)));
         return result;
     }
-
 }
